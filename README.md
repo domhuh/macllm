@@ -26,6 +26,11 @@ $ python train.py --task=vmas/balance
 
 View training results!
 
+
+https://github.com/user-attachments/assets/32b77065-7439-4dd4-a3b2-83a95ba350c3
+
+https://github.com/user-attachments/assets/2d06b8e2-1496-4ab2-ab26-96292016b9b8
+
 https://github.com/user-attachments/assets/1d791936-810e-48af-9ca1-59e5f6b25fc3
 
 
