@@ -1,9 +1,9 @@
 # Multi-agent Control Systems with Language Models
 ![output](https://github.com/user-attachments/assets/4af3f4c9-b3a6-48a1-b6a4-71a87867bd31#center)
 
-**Description:** This repository contains the code for MAPPO (https://arxiv.org/abs/2103.01955), a multi-agent variant of PPO, on VMAS tasks (https://arxiv.org/abs/2207.03530) with a population of agents grounded by common language (https://arxiv.org/pdf/2304.03442). Hence, decision-making agents learned to utilize the capabilities of LLMs to complete various challenging tasks requiring an array of intelligent social behaviors.
+**Description:** This repository contains the code that implements [MAPPO](https://arxiv.org/abs/2103.01955), a multi-agent variant of PPO, to train a population of decision-making agents that are able to work with natural language. Specifically, we use MARL tasks from [VMAS](https://arxiv.org/abs/2207.03530) and extend concepts of multi-agent language modeling from this [work](https://arxiv.org/pdf/2304.03442). In short, we train decision-making agents to learn to utilize the capabilities of LLMs to complete various challenging tasks requiring an array of intelligent social behaviors.
 
-In this implementation, we incorporate HuggingFace (https://huggingface.co/) and SBERT (https://sbert.net/index.html) to grant agents a simple RAG-based (https://arxiv.org/abs/2005.11401) memory and the ability to communicate with one another using natural language.
+In this implementation, we use [HuggingFace](https://huggingface.co/) and [SBERT](https://sbert.net/index.html) to provide agents their own [RAG](https://arxiv.org/abs/2005.11401)-based memory and the ability to communicate with one another using natural language.
 
 
 ### Quickstart
