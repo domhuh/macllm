@@ -1,0 +1,11 @@
+torch
+vmas
+hydra-core 
+numpy
+tensorboard
+huggingface
+moviepy==1.0.3
+transformers
+sentence-transformers
+accelerate>=0.26.0
+bitsandbytes

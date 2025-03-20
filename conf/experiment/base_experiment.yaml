@@ -1,18 +1,18 @@
 defaults:
   - _self_
 
-
-device: "cuda:1"
-llm_device: "cuda:2"
-llm_freq: 10
-max_new_tokens: 100
-max_context_length: 500
+device: "cuda:0"
+llm_device: "cuda:1"
+update_llm_memory: 5
+communicate: 5
+max_new_tokens: 50
+max_context_length: 200
 num_iterations: 500
 
 num_envs: 64
-num_steps_data_collection: 200
-num_update_epochs: 12
-train_batch_size: 64
+num_steps_data_collection: 1000
+num_update_epochs: 24
+train_batch_size: 128
 eval_freq: 2
 lr: 1e-4
 eps: 1e-5

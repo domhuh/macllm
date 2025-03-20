@@ -19,13 +19,12 @@ Install requirements
 $ pip install -r requirements.txt
 ```
 
-Run training
+Run training (Modify conf/*/*.yaml if needed!)
 ```bash
-$ python train.py --task=vmas/balance
+$ python train.py task=vmas/balance
 ```
 
 View training results!
-
 
 https://github.com/user-attachments/assets/32b77065-7439-4dd4-a3b2-83a95ba350c3
 
