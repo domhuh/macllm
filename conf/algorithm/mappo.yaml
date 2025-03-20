@@ -1,0 +1,11 @@
+defaults:
+  - _self_
+
+gamma: 0.99
+clip_coef: 0.2
+ent_coef: 0.0
+vf_coef: 1.0
+gae_lambda: 0.9
+clip_vloss: True
+target_kl: null
+norm_adv: True

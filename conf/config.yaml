@@ -1,0 +1,7 @@
+defaults:
+  - experiment: base_experiment
+  - algorithm: mappo
+  - task: ???
+  - _self_
+
+seed: 0
