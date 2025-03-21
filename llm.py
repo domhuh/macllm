@@ -13,7 +13,7 @@ class MA_LLM_hf():
         self.max_new_tokens = max_new_tokens
         self.max_context_length = max_context_length
         self.device = device
-        # using instruct llama3.2-3b
+        # Initalization of LLM + sentence embedding model for RAG (using instruct llama3.2-3b)
         self.TOKENIZER = AutoTokenizer.from_pretrained("meta-llama/Llama-3.2-1B-Instruct", padding_side='left')
         self.LLM_MODEL = AutoModelForCausalLM.from_pretrained("meta-llama/Llama-3.2-1B-Instruct", torch_dtype=th.float16, #th.bfloat16
                                                               quantization_config=BitsAndBytesConfig(load_in_8bit=True), device_map=device)
@@ -24,11 +24,12 @@ class MA_LLM_hf():
         self.reset()
 
     def reset(self):
+        # Resets context memory
         self.vector_memory = [[] for _ in range(self.num_agents)]
         self.text_memory = [[] for _ in range(self.num_agents)]
 
     def retrieve(self, embedding):
-        # Creates system prompt/cache and adds context using RAG + cosine-similiarity score
+        # Creates system prompt/cache and retrieves context based on cosine-similiarity score
         system_prompt = []
         for agent in range(self.num_agents):
             if len(self.vector_memory[agent]) == 0:
@@ -43,7 +44,7 @@ class MA_LLM_hf():
                 length = 0
                 for i in indices:
                     context = self.text_memory[agent][i]
-                    agent_system_prompt += f"Context {num_context}:\n{context}"
+                    agent_system_prompt += f"Context {num_context}:\n{context}\n"
                     length += len(context)
                     num_context += 1
                     if length > self.max_context_length:
@@ -53,6 +54,7 @@ class MA_LLM_hf():
 
     @th.no_grad()
     def get_communication(self, observation, system_prompts):
+        # From observation, computes message to be broadcast to all other agents. This message is prepended to the user content.
         all_prompts = []
         batch = observation.shape[0]
         for agent in range(self.num_agents):
@@ -67,6 +69,11 @@ class MA_LLM_hf():
 
     @th.no_grad()
     def make_decision_embedding(self, observation, communication, system_prompts):
+        """
+        Construct the user message (to be prompted to LLM) using observation + communication that is then prompted to the LLM.
+        The output text (i.e. the assistant content) is returned.
+        Output: Tuple(embedding vector of output text (using sentence embedding), output text)
+        """
         all_prompts = []
         batch = observation.shape[0]
         for agent in range(self.num_agents):
@@ -89,6 +96,7 @@ class MA_LLM_hf():
     
     @th.no_grad()
     def update_memory(self, observation, action, reward, system_prompts):
+        # Using the observation, action and reward recieved, the agent self-reflects and appends to the context memory.
         all_prompts = []
         batch = observation.shape[0]
         for agent in range(self.num_agents):
