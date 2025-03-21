@@ -1,19 +1,34 @@
 defaults:
   - _self_
 
-device: "cuda:0"
-llm_device: "cuda:1"
-update_llm_memory: 5
+# device used for VMAS environment + PPO training
+device: "cuda:0" 
+# device used for LLM (LLM queries can utilize large amount of vram and processing time, so adjust their parameters accordingly. The parameters are denoted with [*])
+llm_device: "cuda:1" 
+# frequency of self-reflection, which adds to agent's memory [*]
+update_llm_memory: 5 
+# frequency of communication [*]
 communicate: 5
+# max number of tokens generated per llm query [*]
 max_new_tokens: 50
+# max length of total context retrieved [*]
 max_context_length: 200
+# number of total iterations of data collection + training + evaluation
 num_iterations: 500
 
+# number of parallel environments
 num_envs: 64
+# number of steps for data collection (for better training, ensure >=max_step of task)
 num_steps_data_collection: 1000
+# number of ppo updates per iteration
 num_update_epochs: 24
+# batch size for training
 train_batch_size: 128
+# frequency of evaluation per n iteration
 eval_freq: 2
+# learning rate
 lr: 1e-4
+# for adam optimizer for numeric stabilitiy
 eps: 1e-5
+# max value to clip gradients
 max_grad_norm: 0.5
