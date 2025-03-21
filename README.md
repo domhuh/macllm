@@ -24,6 +24,8 @@ Run training (Modify conf/*/*.yaml if needed!)
 $ python train.py task=vmas/balance
 ```
 
+*Please adjust the configuration files in conf/\* accordingly depending on the system you are working with!
+
 View training results!
 
 https://github.com/user-attachments/assets/32b77065-7439-4dd4-a3b2-83a95ba350c3
