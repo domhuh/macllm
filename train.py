@@ -29,6 +29,7 @@ def hydra_experiment(cfg: DictConfig) -> None:
     num_agents = cfg.task.n_agents
     num_envs = cfg.experiment.num_envs
 
+    # Initialize environments
     envs = vmas.make_env(scenario = task_name.split('/')[-1],
                          num_envs = num_envs,
                          device = device,
@@ -42,7 +43,8 @@ def hydra_experiment(cfg: DictConfig) -> None:
     action_space = {k:v.shape[0] for k,v in envs.action_space.sample().items()}
     obs_dim = max(observation_space.values())
     act_dim = max(action_space.values())
-
+    
+    # Initialize model + optimizer
     agent = Agent(observation_space, action_space,
                   device = device,
                   llm_device = cfg.experiment.llm_device,
@@ -50,7 +52,7 @@ def hydra_experiment(cfg: DictConfig) -> None:
                   max_context_length = cfg.experiment.max_context_length)
     optimizer = th.optim.Adam(agent.parameters(), lr=cfg.experiment.lr, eps=cfg.experiment.eps)
 
-    # storage
+    # Initialize storage for data collection
     obs = th.zeros((num_steps, num_envs, num_agents, obs_dim)).to(device)
     actions = th.zeros((num_steps, num_envs, num_agents, act_dim)).to(device)
     logprobs = th.zeros((num_steps, num_envs, num_agents)).to(device)
@@ -58,6 +60,7 @@ def hydra_experiment(cfg: DictConfig) -> None:
     dones = th.zeros((num_steps, num_envs, 1)).to(device)
     values = th.zeros((num_steps, num_envs, num_agents)).to(device)
 
+    # Set up the context memory
     agent.llm.reset()
     for iteration in range(cfg.experiment.num_iterations):
 
@@ -85,6 +88,7 @@ def hydra_experiment(cfg: DictConfig) -> None:
                 agent.llm.update_memory(obs[step], action, 
                                         th.stack([reward[k] for k in agent.agent_keys], 1), 
                                         system_prompt)
+        # Compute advantage and return for all samples
         with th.no_grad():
             next_obs = th.stack([next_obs[k] for k in agent.agent_keys],1)
             next_value = agent.get_value(next_obs)
@@ -125,6 +129,7 @@ def hydra_experiment(cfg: DictConfig) -> None:
                 _, newlogprob, entropy, newvalue, _, _ = agent.get_action_and_value(b_obs[mb_inds], b_actions[mb_inds], communicate = True)
                 logratio = newlogprob - b_logprobs[mb_inds]
                 ratio = logratio.exp()
+                
                 with th.no_grad():
                     old_approx_kl = (-logratio).mean()
                     approx_kl = ((ratio - 1) - logratio).mean()
@@ -133,12 +138,12 @@ def hydra_experiment(cfg: DictConfig) -> None:
                 if cfg.algorithm.norm_adv:
                     mb_advantages = (mb_advantages - mb_advantages.mean()) / (mb_advantages.std() + 1e-8)
 
-                # Policy loss
+                # Compute policy loss
                 pg_loss1 = -mb_advantages * ratio
                 pg_loss2 = -mb_advantages * th.clamp(ratio, 1 - cfg.algorithm.clip_coef, 1 + cfg.algorithm.clip_coef)
                 pg_loss = th.max(pg_loss1, pg_loss2).mean()
 
-                # Value loss
+                # Compute value loss
                 if cfg.algorithm.clip_vloss:
                     v_loss_unclipped = (newvalue - b_returns[mb_inds]) ** 2
                     v_clipped = b_values[mb_inds] + th.clamp(
@@ -160,6 +165,9 @@ def hydra_experiment(cfg: DictConfig) -> None:
                 if cfg.algorithm.target_kl is not None and approx_kl > cfg.algorithm.target_kl:
                     break
 
+        # ---------------- #
+        # Evaluation       #
+        # ---------------- #
         if not iteration % cfg.experiment.eval_freq:
             logging.info(f"Iteration {iteration} / {cfg.experiment.num_iterations}: Evaluation...")
             frame_list = []
@@ -185,6 +193,7 @@ def hydra_experiment(cfg: DictConfig) -> None:
                     step += 1
                 if _done.all():
                     break
+            # Save video of evaluation.
             eval_score = {k: v.mean().item() for k,v in eval_score.items()}
             logging.info(f"Iteration {iteration}: Score [{sum(eval_score.values())}] {eval_score}")
             clip = ImageSequenceClip(frame_list, fps=30)
