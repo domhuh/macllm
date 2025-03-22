@@ -88,6 +88,12 @@ def hydra_experiment(cfg: DictConfig) -> None:
                 agent.llm.update_memory(obs[step], action, 
                                         th.stack([reward[k] for k in agent.agent_keys], 1), 
                                         system_prompt)
+            if next_done.any():
+                index = next_done.argwhere().flatten()
+                for i in index:
+                    envs.reset_at(i)
+                next_obs = envs.get_from_scenario(get_observations=True, get_rewards=False, get_infos=False, get_dones=False)[0]
+
         # Compute advantage and return for all samples
         with th.no_grad():
             next_obs = th.stack([next_obs[k] for k in agent.agent_keys],1)
